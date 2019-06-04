@@ -1,4 +1,7 @@
 import React from "react";
+import { getCourses, deleteCourse } from "./api/courseApi";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 class App extends React.Component {
   state = {
@@ -8,9 +11,29 @@ class App extends React.Component {
     ]
   };
 
-  deleteCourse(courseId) {
-    const courses = this.state.courses.filter(course => course.id !== courseId);
-    this.setState({ courses: courses });
+  async componentDidMount() {
+    await this.refreshCourses();
+    //getCourses().then(courses => this.setState({ courses: courses }));
+    // const courses = await getCourses();
+    // this.setState({ courses });
+  }
+
+  async refreshCourses() {
+    try {
+      const courses = await getCourses(); //.catch(err => toast.error(err.message));
+      this.setState({ courses });
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async deleteCourse(courseId) {
+    try {
+      await deleteCourse(courseId);
+      await this.refreshCourses();
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   renderTable() {
@@ -43,8 +66,9 @@ class App extends React.Component {
   render() {
     return (
       <>
+        <ToastContainer />
         <h1>Courses</h1>
-        <ul>{this.renderTable()}</ul>
+        {this.renderTable()}
       </>
     );
   }
